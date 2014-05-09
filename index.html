@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>PPIJ - Magicni kvadrati</title>
+        <style>
+            body{font-family: Arial}
+        </style>
+        <meta charset="utf-8">
+    </head>
+
+    <body>
+        <div align="center">
+            
+            <canvas id="canvas_id" width="800" height="600">
+            </canvas>
+            
+            <p id="errorlog"></p>
+        </div>
+        
+        <script src="js/Title.js"></script>
+        <script src="js/Button.js"></script>
+        <script src="js/OptionsText.js"></script>
+        <script src="js/Checkbox.js"></script>
+        <script src="js/ValuePicker.js"></script>
+        <script src="js/MenuContainer.js"></script>
+        <script src="js/GameDisplay.js"></script>
+        <script src="js/GameBoard.js"></script>
+        <script src="js/Game.js"></script>
+        <script>
+            game = new Game();
+            game.init();
+        </script>
+    </body>
+</html>
