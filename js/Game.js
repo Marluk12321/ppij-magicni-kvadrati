@@ -624,6 +624,10 @@ function Game(){
     var menuToGameAnimation = function(){
         var dt = getTimeDiff();
         
+        // clear
+        Drawing.fillStyle = "white";
+        Drawing.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+        
         // draw game elements
         Display.draw(Drawing);
         Board.draw(Drawing);

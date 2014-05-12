@@ -107,7 +107,7 @@ function GameBoard(x, y){
         do {
             var c = Math.floor(Math.random() * size*size);
             if (cells.indexOf(c) === -1) cells.push(c);
-        } while (cells.length < 2*size - 3)
+        } while (cells.length < 4*size - 9) // how may solved cells
         
         // fill cells
         for (var c in cells) {
@@ -169,9 +169,6 @@ function GameBoard(x, y){
             SumsArray[2*GameArray[0].length + 1].value += val;
         }
         
-        // duplicates = no win
-        if (Flags.duplicates) return false;
-        
         // check for task win
         if (Task !== 0) {
             var failed = false;
@@ -187,7 +184,7 @@ function GameBoard(x, y){
             }
             if (!failed){
                 this.setInactive();
-                return true;
+                return !Flags.duplicates; // no win if duplicates
             }
         }
         
@@ -213,8 +210,12 @@ function GameBoard(x, y){
         Flags.duplicates = false;
         for (var i in GameArray)
             for (var j in GameArray[i])
-                if (GameArray[i][j].color === color.wrong)
-                    GameArray[i][j].color = color.normal;
+                if (GameArray[i][j].color !== color.in_use) {
+                    if (GameArray[i][j].edge === color.normal_edge)
+                        GameArray[i][j].color = color.normal;
+                    if (GameArray[i][j].edge === color.locked_edge)
+                        GameArray[i][j].color = color.locked;
+                }
         
         // search
         for (var i = 0; i < GameArray.length; i++)
@@ -225,9 +226,9 @@ function GameBoard(x, y){
                             GameArray[i][j].value === GameArray[k][l].value &&
                             GameArray[i][j].value !== "" && GameArray[i][j].value !== 0) {
                                 Flags.duplicates = true;
-                                if (GameArray[i][j].color === color.normal)
+                                if (GameArray[i][j].color !== color.in_use)
                                     GameArray[i][j].color = color.wrong;
-                                if (GameArray[k][l].color === color.normal)
+                                if (GameArray[k][l].color !== color.in_use)
                                     GameArray[k][l].color = color.wrong;
                         }
     };
@@ -296,11 +297,11 @@ function GameBoard(x, y){
             for (var j = 0; j < GameArray[i].length; j++)
                 if (GameArray[i][j].color === color.in_use) {
                     if (key === 10) GameArray[i][j].value = ""; // del
-                    else if (GameArray[i][j].value === saved_value) {
+                    else if (GameArray[i][j].value === saved_value || GameArray[i][j].value >= 10) {
                         GameArray[i][j].value = key;
                         saved_value = "";
                     }
-                    else if (GameArray[i][j].value < 10) GameArray[i][j].value = 10*GameArray[i][j].value + key;
+                    else GameArray[i][j].value = 10*GameArray[i][j].value + key;
                     
                     if (GameArray[i][j].value === 0) GameArray[i][j].value = "";
                     return true;
