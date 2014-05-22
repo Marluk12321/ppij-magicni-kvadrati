@@ -8,6 +8,7 @@ function GameBoard(x, y){
             started: false,
             sums: false,
             inactive: false,
+            deselectable: true,
             duplicates: false
         },
                 
@@ -41,7 +42,7 @@ function GameBoard(x, y){
                 16, 2, 3, 13],
             
             5: [11, 24, 7 ,20, 13,
-                4, 12, 25, 8 ,16,
+                4, 12, 25, 8, 16,
                 17, 5, 13, 21, 9,
                 10, 18, 1, 14, 22,
                 23, 6, 19, 2, 15]
@@ -107,7 +108,7 @@ function GameBoard(x, y){
         do {
             var c = Math.floor(Math.random() * size*size);
             if (cells.indexOf(c) === -1) cells.push(c);
-        } while (cells.length < 4*size - 9) // how may solved cells
+        } while (cells.length < 4*size - 9) // how many solved cells
         
         // fill cells
         for (var c in cells) {
@@ -129,6 +130,10 @@ function GameBoard(x, y){
     
     
     this.setTask = function(task_value){ Task = task_value; };
+    
+    
+    
+    this.setNotDelesectable = function(){ Flags.deselectable = false; };
     
     
     
@@ -235,9 +240,13 @@ function GameBoard(x, y){
 
 
 
-    var clickAction = function(){};
+    var selectAction = function(){};
     
-    this.setClickAction = function(func){ clickAction = func; };
+    this.setSelectAction = function(func){ selectAction = func; };
+    
+    var deselectAction = function(){};
+    
+    this.setDeselectAction = function(func){ deselectAction = func; };
     
     
     
@@ -274,18 +283,28 @@ function GameBoard(x, y){
             for (var j = 0; j < GameArray[i].length; j++)
                 if (mouseX > GameArray[i][j].x && mouseX < GameArray[i][j].x+GameArray[i][j].size &&
                     mouseY > GameArray[i][j].y && mouseY < GameArray[i][j].y+GameArray[i][j].size ) {
+                    
                     if (GameArray[i][j].color === color.normal || GameArray[i][j].color === color.wrong) {
+                        // deselect other cells
+                        for (var k = 0; k < GameArray.length; k++)
+                            for (var l = 0; l < GameArray[k].length; l++)
+                                if (GameArray[k][l].color === color.in_use) GameArray[k][l].color = color.normal;
+                        
+                        this.checkDuplicates();
+                        
+                        // select current cell
                         GameArray[i][j].color = color.in_use;
                         saved_value = GameArray[i][j].value;
-                        clickAction();
+                        selectAction();
                     }
                 }
-                else if (GameArray[i][j].color === color.in_use) {
+                else if (GameArray[i][j].color === color.in_use && Flags.deselectable) {
                     GameArray[i][j].color = color.normal;
                     this.checkDuplicates();
-                    clickAction();
+                    deselectAction();
                 }
-                
+        
+        Flags.deselectable = true;
     };
     
     

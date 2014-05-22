@@ -29,6 +29,11 @@ function Game(){
         QuitButton,
         Board,
         BoardContent,
+        Keypad = {
+            components: [],
+            active: false,
+            moving: false
+        };
         
         STATE = {
             Current: -1,
@@ -325,11 +330,95 @@ function Game(){
         BoardContent.setTask(display.getTask());
         BoardContent.setStarted(GameFlags.started);
         BoardContent.setSums(GameFlags.sums);
-        BoardContent.setClickAction(
+        BoardContent.setSelectAction(
             function(){KeyPressed = -1;
+                Keypad.active = true;
+                keypadMove();
+                drawFlag = true;}
+        );
+        BoardContent.setDeselectAction(
+            function(){KeyPressed = -1;
+                Keypad.active = false;
+                keypadMove();
                 drawFlag = true;}
         );
         Board.addClickable(BoardContent);
+        
+        
+        // keypad
+        var keypad_width = 80,
+            keypad_height = 300,
+            button_size = 50,
+            button_padding = 15,
+            button_distance = 5;
+    
+    
+        Keypad.components[0] = new MenuContainer(-keypad_width/2, middle.Y  - 90,
+            keypad_width, keypad_height);
+            
+        var key1 = new Button(
+            button_padding, button_padding, button_size, button_size);
+        key1.setText("1");
+        key1.setClickAction( function(){ KeyPressed = 1; BoardContent.setNotDelesectable(); } );
+        Keypad.components[0].addClickable(key1);
+        
+        var key2 = new Button(
+            button_padding, button_padding + button_distance + button_size, button_size, button_size);
+        key2.setText("2");
+        key2.setClickAction( function(){ KeyPressed = 2; BoardContent.setNotDelesectable(); } );
+        Keypad.components[0].addClickable(key2);
+        
+        var key3 = new Button(
+            button_padding, button_padding + button_distance * 2 + button_size * 2, button_size, button_size);
+        key3.setText("3");
+        key3.setClickAction( function(){ KeyPressed = 3; BoardContent.setNotDelesectable(); } );
+        Keypad.components[0].addClickable(key3);
+        
+        var key4 = new Button(
+            button_padding, button_padding + button_distance * 3 + button_size * 3, button_size, button_size);
+        key4.setText("4");
+        key4.setClickAction( function(){ KeyPressed = 4; BoardContent.setNotDelesectable(); } );
+        Keypad.components[0].addClickable(key4);
+        
+        var key5 = new Button(
+            button_padding, button_padding + button_distance * 4 + button_size * 4, button_size, button_size);
+        key5.setText("5");
+        key5.setClickAction( function(){ KeyPressed = 5; BoardContent.setNotDelesectable(); } );
+        Keypad.components[0].addClickable(key5);
+        
+            
+        Keypad.components[1] = new MenuContainer(WINDOW_WIDTH + keypad_width/2, middle.Y  - 90,
+            keypad_width, keypad_height);
+            
+        var key6 = new Button(
+            button_padding, button_padding, button_size, button_size);
+        key6.setText("6");
+        key6.setClickAction( function(){ KeyPressed = 6; BoardContent.setNotDelesectable(); } );
+        Keypad.components[1].addClickable(key6);
+        
+        var key7 = new Button(
+            button_padding, button_padding + button_distance + button_size, button_size, button_size);
+        key7.setText("7");
+        key7.setClickAction( function(){ KeyPressed = 7; BoardContent.setNotDelesectable(); } );
+        Keypad.components[1].addClickable(key7);
+        
+        var key8 = new Button(
+            button_padding, button_padding + button_distance * 2 + button_size * 2, button_size, button_size);
+        key8.setText("8");
+        key8.setClickAction( function(){ KeyPressed = 8; BoardContent.setNotDelesectable(); } );
+        Keypad.components[1].addClickable(key8);
+        
+        var key9 = new Button(
+            button_padding, button_padding + button_distance * 3 + button_size * 3, button_size, button_size);
+        key9.setText("9");
+        key9.setClickAction( function(){ KeyPressed = 9; BoardContent.setNotDelesectable(); } );
+        Keypad.components[1].addClickable(key9);
+        
+        var key0 = new Button(
+            button_padding, button_padding + button_distance * 4 + button_size * 4, button_size, button_size);
+        key0.setText("0");
+        key0.setClickAction( function(){ KeyPressed = 0; BoardContent.setNotDelesectable(); } );
+        Keypad.components[1].addClickable(key0);
     };
     
     
@@ -364,12 +453,18 @@ function Game(){
         if (STATE.Current === STATE.Game) {
             // redraw if color changed
             if (Mouse.moved && 
-                (Display.mouseAt(Mouse.X, Mouse.Y) || Board.mouseAt(Mouse.X, Mouse.Y)) )
+                (Display.mouseAt(Mouse.X, Mouse.Y) ||
+                 Board.mouseAt(Mouse.X, Mouse.Y) ||
+                 Keypad.components[0].mouseAt(Mouse.X, Mouse.Y) ||
+                 Keypad.components[1].mouseAt(Mouse.X, Mouse.Y))
+               )
                     drawFlag = true;
                 
             // check if click triggered
             if (Mouse.clicked) {
                 Display.clicked(Mouse.X, Mouse.Y);
+                Keypad.components[0].clicked(Mouse.X, Mouse.Y);
+                Keypad.components[1].clicked(Mouse.X, Mouse.Y);
                 Board.clicked(Mouse.X, Mouse.Y);
                 
                 then = Date.now();
@@ -400,6 +495,7 @@ function Game(){
         
         // game time update and send key pressed
         if (STATE.Current === STATE.Game){
+            if (Keypad.moving) drawFlag = true;
             updateGameTime();
             sendKey();
         }
@@ -443,8 +539,8 @@ function Game(){
             GameSettings.time_picker.setMinMaxStep(0, 0, 1);
         }
         else if (GameSettings.time_limit === 0) {
-            GameSettings.time_limit = 15;
-            GameSettings.time_picker.setValue(20);
+            GameSettings.time_limit = 20;
+            GameSettings.time_picker.setValue(GameSettings.time_limit);
             GameSettings.time_picker.setMinMaxStep(10, 90, 10);
         }
     };
@@ -486,6 +582,27 @@ function Game(){
     
     
     
+    var keypadMove = function(){
+        if (Keypad.active) {
+            // move into screen
+            Keypad.components[0].setMoveDestination(
+                0.5*Keypad.components[0].getWidth(), Keypad.components[0].getPosY());
+            Keypad.components[1].setMoveDestination(
+                WINDOW_WIDTH - 1.5*Keypad.components[1].getWidth(), Keypad.components[1].getPosY());
+        }
+        else {
+            // move out of screen
+            Keypad.components[0].setMoveDestination(
+                -Keypad.components[0].getWidth(), Keypad.components[0].getPosY());
+            Keypad.components[1].setMoveDestination(
+                WINDOW_WIDTH, Keypad.components[1].getPosY());
+        }
+        
+        Keypad.moving = true;
+    };
+    
+    
+    
 // ********** DRAWING **********
     
     var drawAll = function(){
@@ -503,6 +620,7 @@ function Game(){
         if (STATE.Current === STATE.Game) {
             Display.draw(Drawing);
             Board.draw(Drawing);
+            keypadDraw();
         }
         if (STATE.Current === STATE.GAMEtoM0) gameToMenuAnimation();
         
@@ -686,5 +804,31 @@ function Game(){
         
         // end
         if (done1 && done2) STATE.Current = STATE.Menu_1;
+    };
+    
+    
+    
+    var keypadDraw = function() {
+        // move
+        if (Keypad.moving){
+            var dt = getTimeDiff();
+
+            var done1 = Keypad.components[0].move(dt);
+            var done2 = Keypad.components[1].move(dt);
+            
+            Drawing.fillStyle = "white";
+            Drawing.fillRect(
+                0, Keypad.components[0].getPosY(),
+                1.5*Keypad.components[0].getWidth(), Keypad.components[0].getHeight());
+            Drawing.fillRect(
+                WINDOW_WIDTH - 1.5*Keypad.components[0].getWidth(), Keypad.components[0].getPosY(),
+                1.5*Keypad.components[0].getWidth(), Keypad.components[0].getHeight());
+
+            if (done1 && done2) Keypad.moving = false;
+        }
+        
+        // draw
+        Keypad.components[0].draw(Drawing);
+        Keypad.components[1].draw(Drawing);
     };
 }
