@@ -188,17 +188,21 @@ function GameBoard(x, y){
                     failed = true;
             }
             if (!failed){
+                if (Flags.duplicates) return false;
+                deselectAction();
                 this.setInactive();
-                return !Flags.duplicates; // no win if duplicates
+                return true;
             }
         }
         
         // check for normal win
+        if (Flags.duplicates) return false;
         for (var i in SumsArray) if (!SumsArray[i].complete) return false;
         var aim = SumsArray[0].value;
         for (var i in SumsArray) if (SumsArray[i].value !== aim) return false;
         
         for (var i in SumsArray) SumsArray[i].color = color.correct;
+        deselectAction();
         this.setInactive();
         return true;
     };

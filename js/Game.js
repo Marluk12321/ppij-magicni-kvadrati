@@ -340,6 +340,7 @@ function Game(){
             function(){KeyPressed = -1;
                 Keypad.active = false;
                 keypadMove();
+                getTimeDiff();
                 drawFlag = true;}
         );
         Board.addClickable(BoardContent);
